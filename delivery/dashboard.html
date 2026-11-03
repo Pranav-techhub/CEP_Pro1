@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Console — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Rider Console — Amit Verma</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="online-toggle-btn" class="status-pill online">
+            <span class="status-dot active"></span>
+            <span id="online-label">ONLINE • On Duty</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Active Multi-Order Batch Alert -->
+        <div id="active-batch-card" class="card" style="border-left: 4px solid var(--accent-orange); margin-bottom: 2rem; background: rgba(255, 107, 0, 0.08);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div class="badge badge-orange" style="margin-bottom: 0.35rem;">ACTIVE MULTI-DROP BATCH</div>
+              <h2 style="font-size: 1.4rem;" id="batch-title">Batch #BATCH-7001 • 5 Morning Drops</h2>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Pickup: <strong>Sharmaji Chai Stall</strong> • Koramangala 4th Block
+              </div>
+            </div>
+            <a href="/delivery/navigation.html" class="btn btn-orange btn-lg" style="gap: 0.75rem;">
+              <span>🗺️</span> Open Turn-by-Turn GPS Navigation →
+            </a>
+          </div>
+        </div>
+
+        <!-- Rider Shift KPI Metrics -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Today's Earnings</span>
+            <div class="stat-value text-gradient-gold">₹1,420</div>
+            <div class="stat-trend positive"><span>Includes ₹220 batch bonus</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Completed Drops</span>
+            <div class="stat-value text-gradient-emerald">16</div>
+            <div class="stat-trend positive"><span>4 multi-drop batches</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Customer Rating</span>
+            <div class="stat-value">★ 4.94</div>
+            <div class="stat-trend"><span>1,248 all-time deliveries</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Vehicle & Battery</span>
+            <div class="stat-value">84%</div>
+            <div class="stat-trend positive"><span>EV Scooter (KA-01-EQ-9874)</span></div>
+          </div>
+        </div>
+
+        <!-- Assigned Stops Quick Checklist -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3>Active Stops in Current Batch</h3>
+            <a href="/delivery/navigation.html" class="btn btn-secondary btn-sm">Full Screen Map →</a>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="rider-stops-list">
+            <!-- Dynamically populated stops -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { notifications } from '/src/services/notificationService.js';
+    import { securityGuard } from '/src/firebase/security.js';
+
+    securityGuard.requireAuth(['delivery', 'admin']);
+    renderDashboardSidebar('delivery', 'dashboard');
+
+    let isOnline = true;
+    const onlineBtn = document.getElementById('online-toggle-btn');
+    const onlineLabel = document.getElementById('online-label');
+
+    onlineBtn.addEventListener('click', () => {
+      isOnline = !isOnline;
+      if (isOnline) {
+        onlineBtn.className = 'status-pill online';
+        onlineLabel.innerText = 'ONLINE • On Duty';
+        notifications.showToast('You are now ONLINE and ready for order dispatch.', 'success');
+      } else {
+        onlineBtn.className = 'status-pill busy';
+        onlineLabel.innerText = 'OFFLINE • Off Duty';
+        notifications.showToast('You are now OFFLINE. New batches will not be assigned.', 'warning');
+      }
+    });
+
+    // Populate active stops
+    const orders = store.getOrders('biz_sharma_chai').slice(0, 5);
+    const container = document.getElementById('rider-stops-list');
+
+    container.innerHTML = orders.map((o, idx) => `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="marker-stop-number" style="position: static; width: 28px; height: 28px; font-size: 0.85rem;">${idx + 1}</div>
+          <div>
+            <div style="font-weight: 700;">${o.customerName}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">${o.customerAddress}</div>
+            <div style="font-size: 0.75rem; color: var(--primary-gold); margin-top: 0.2rem;">
+              ${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <a href="/delivery/navigation.html?stop=${idx + 1}" class="btn btn-secondary btn-sm">Navigate</a>
+          <span class="badge ${o.status === 'Delivered' ? 'badge-emerald' : 'badge-orange'}">${o.status}</span>
+        </div>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

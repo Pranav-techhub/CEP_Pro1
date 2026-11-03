@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revenue & Sales Analytics — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Financial & Operational Analytics</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="download-report-btn" class="btn btn-secondary btn-sm">Download Monthly Statement</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Monthly Gross Sales</span>
+            <div class="stat-value text-gradient-gold">₹4,28,900</div>
+            <div class="stat-trend positive"><span>↑ 22.4% vs last month</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Average Order Value</span>
+            <div class="stat-value">₹412</div>
+            <div class="stat-trend positive"><span>↑ ₹35 increase</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">On-Time Dispatch Rate</span>
+            <div class="stat-value text-gradient-emerald">99.1%</div>
+            <div class="stat-trend positive"><span>Top 1% in Bengaluru</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Net Customer Rating</span>
+            <div class="stat-value">★ 4.88</div>
+            <div class="stat-trend"><span>512 verified reviews</span></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div class="card">
+            <h3 style="margin-bottom: 1.25rem;">Weekly Revenue Velocity</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                  <span>Monday</span><span>₹52,400</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 70%; height: 100%; background: var(--primary-gold);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                  <span>Tuesday</span><span>₹48,200</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 65%; height: 100%; background: var(--primary-gold);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                  <span>Wednesday</span><span>₹61,000</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 82%; height: 100%; background: var(--primary-gold);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                  <span>Thursday</span><span>₹58,900</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 78%; height: 100%; background: var(--primary-gold);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+                  <span>Friday (Peak)</span><span>₹84,200</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 98%; height: 100%; background: var(--accent-orange);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom: 1.25rem;">Most Popular Dishes</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>Awadhi Chicken Dum Biryani</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">480 plates sold this month</div>
+                </div>
+                <span class="badge badge-gold">₹1,72,800</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>Old Delhi Butter Chicken</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">340 portions sold</div>
+                </div>
+                <span class="badge badge-gold">₹1,29,200</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>Special Masala Kulhad Chai (Bulk)</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">920 cups sold</div>
+                </div>
+                <span class="badge badge-emerald">₹32,200</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { billingService } from '/src/services/billingService.js';
+
+    renderDashboardSidebar('hotel', 'analytics');
+
+    document.getElementById('download-report-btn').addEventListener('click', () => {
+      const orders = store.getOrders();
+      billingService.exportOrdersToCsv(orders, 'royal-darbar-monthly-analytics.csv');
+    });
+  </script>
+</body>
+</html>

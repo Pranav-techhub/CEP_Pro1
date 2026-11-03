@@ -1,0 +1,195 @@
+/* ==========================================================================
+   TEAROUTE — MAPLIBRE & GEOSPATIAL STYLING
+   ========================================================================== */
+
+.map-container {
+  width: 100%;
+  height: 520px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: #0B0F19;
+}
+
+.map-container-fullscreen {
+  height: calc(100vh - var(--topbar-height) - 4rem);
+  min-height: 580px;
+}
+
+/* MapLibre Canvas Customizations */
+.maplibregl-canvas {
+  outline: none;
+}
+
+/* Map Floating Telemetry Card */
+.map-telemetry-panel {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  min-width: 260px;
+}
+
+.map-telemetry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.825rem;
+}
+
+.map-telemetry-label {
+  color: var(--text-muted);
+}
+
+.map-telemetry-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+/* 1-KM Proximity Banner Alert */
+.proximity-alert-banner {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(255, 107, 0, 0.95));
+  color: #050811;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(255, 107, 0, 0.4);
+  animation: proximityBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes proximityBounce {
+  0% { transform: translate(-50%, -40px); opacity: 0; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Custom HTML Markers */
+.marker-scooter {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-gold), var(--accent-orange));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #050811;
+  box-shadow: 0 0 20px var(--primary-gold-glow);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.4s ease-out;
+}
+
+.marker-scooter::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--primary-gold);
+  animation: radarRipple 1.6s infinite;
+}
+
+@keyframes radarRipple {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.marker-store {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: #1E293B;
+  border: 2px solid var(--accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-blue);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+  cursor: pointer;
+}
+
+.marker-customer {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #1E293B;
+  border: 2px solid var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-emerald);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  cursor: pointer;
+}
+
+.marker-stop-number {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #050811;
+}
+
+/* Map Controls Override */
+.maplibregl-ctrl-group {
+  background: rgba(17, 24, 39, 0.9) !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+.maplibregl-ctrl-group button:last-child {
+  border-bottom: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+
+.maplibregl-ctrl-attrib {
+  background: rgba(11, 15, 25, 0.7) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.7rem !important;
+  padding: 0.2rem 0.6rem !important;
+  border-top-left-radius: var(--radius-sm);
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--primary-gold) !important;
+}

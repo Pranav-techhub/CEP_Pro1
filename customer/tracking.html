@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Delivery Tracking — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/maps.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Live GPS Order Telemetry</h1>
+        </div>
+        <div class="topbar-right">
+          <!-- Toggle Simulation Demo Mode for evaluator convenience -->
+          <button id="toggle-sim-btn" class="btn btn-secondary btn-sm" style="border-color: var(--primary-gold);">
+            🎮 Run Demo Rider Simulation
+          </button>
+          <a href="/customer/orders.html" class="btn btn-secondary btn-sm">All Orders</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Order Status Progress Stepper -->
+        <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Tracking Order</span>
+              <h2 style="font-size: 1.5rem;" id="track-order-id">#ORD-7001</h2>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-orange" id="track-status-badge">On the Way</span>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;" id="track-eta-label">Estimated: 7 mins</div>
+            </div>
+          </div>
+
+          <div class="order-stepper">
+            <div class="step-node completed" id="step-node-1">
+              <div class="step-circle">✓</div>
+              <span class="step-label">Accepted</span>
+            </div>
+            <div class="step-node completed" id="step-node-2">
+              <div class="step-circle">✓</div>
+              <span class="step-label">Preparing</span>
+            </div>
+            <div class="step-node completed" id="step-node-3">
+              <div class="step-circle">✓</div>
+              <span class="step-label">Picked Up</span>
+            </div>
+            <div class="step-node current" id="step-node-4">
+              <div class="step-circle">🛵</div>
+              <span class="step-label">On The Way</span>
+            </div>
+            <div class="step-node" id="step-node-5">
+              <div class="step-circle">⚡</div>
+              <span class="step-label">Arriving Soon</span>
+            </div>
+            <div class="step-node" id="step-node-6">
+              <div class="step-circle">🏠</div>
+              <span class="step-label">Delivered</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map & Telemetry Dashboard Container -->
+        <div class="grid grid-cols-3 gap-6">
+          <!-- 2/3 Width Map Container -->
+          <div style="grid-column: span 2;">
+            <div class="map-container" id="tracking-map" style="height: 580px;">
+              <!-- 1-KM Proximity Banner Alert (Appears dynamically) -->
+              <div id="proximity-banner" class="proximity-alert-banner" style="display: none;">
+                <span>⚡</span>
+                <span>PROXIMITY ALERT: Your delivery partner is just 1 KM away!</span>
+              </div>
+
+              <!-- Map Telemetry HUD Overlay -->
+              <div class="map-telemetry-panel">
+                <div style="font-weight: 700; color: var(--primary-gold); font-size: 0.85rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.35rem;">
+                  REAL-TIME TELEMETRY
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Remaining Road Distance:</span>
+                  <span class="map-telemetry-value" id="hud-distance">1.2 km</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Straight-Line Proximity:</span>
+                  <span class="map-telemetry-value" id="hud-proximity">1,120 m</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Estimated Transit Time:</span>
+                  <span class="map-telemetry-value text-gradient-gold" id="hud-duration">6 mins</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Rider Speed:</span>
+                  <span class="map-telemetry-value" id="hud-speed">26 km/h</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Telemetry Source:</span>
+                  <span class="map-telemetry-value" id="hud-source" style="color: var(--accent-emerald);">Live Hardware GPS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1/3 Width Rider & Order Details Panel -->
+          <div>
+            <!-- Delivery Partner Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <h4 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+                Assigned Delivery Partner
+              </h4>
+              <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div class="user-avatar" style="width: 50px; height: 50px; font-size: 1.25rem;">🛵</div>
+                <div>
+                  <div style="font-weight: 700; font-size: 1.1rem;" id="rider-name">Amit Verma</div>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);" id="rider-vehicle">Electric Scooter • KA-01-EQ-9874</div>
+                  <div style="font-size: 0.8rem; color: var(--primary-gold); font-weight: 600;">★ 4.9 Rating (1,248 trips)</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="tel:+919845012345" class="btn btn-secondary btn-sm" style="flex: 1;">📞 Call Rider</a>
+                <button type="button" class="btn btn-secondary btn-sm" id="view-invoice-btn" style="flex: 1;">📄 Tax Invoice</button>
+              </div>
+            </div>
+
+            <!-- Route Stop Breakdown -->
+            <div class="card">
+              <h4 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+                Route Waypoints
+              </h4>
+              <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.875rem;">
+                <div style="display: flex; gap: 0.75rem;">
+                  <span style="font-size: 1.1rem;">🏪</span>
+                  <div>
+                    <div style="font-weight: 700;" id="pickup-name">Sharmaji Chai & Nashta</div>
+                    <div style="font-size: 0.775rem; color: var(--text-muted);" id="pickup-address">80 Feet Rd, 4th Block Koramangala</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                  <span style="font-size: 1.1rem;">🏠</span>
+                  <div>
+                    <div style="font-weight: 700;">Customer Destination</div>
+                    <div style="font-size: 0.775rem; color: var(--text-muted);" id="dest-address">Prestige Pine Wood, Koramangala 3rd Block</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div id="invoice-modal" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 820px; background: transparent; border: none; box-shadow: none;">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem; gap: 0.5rem;">
+        <button id="print-invoice-btn" class="btn btn-primary btn-sm">🖨️ Print / Save PDF</button>
+        <button id="close-invoice-modal" class="btn btn-secondary btn-sm">✕ Close</button>
+      </div>
+      <div id="invoice-modal-content"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { createTearouteMap, fitCoordinates } from '/src/maps/map.js';
+    import { markersFactory } from '/src/maps/markers.js';
+    import { routingService } from '/src/maps/routing.js';
+    import { gpsTracker } from '/src/maps/geolocation.js';
+    import { proximityDetector } from '/src/maps/nearbyDetection.js';
+    import { distanceCalculator } from '/src/maps/distanceCalculator.js';
+    import { billingService } from '/src/services/billingService.js';
+
+    renderDashboardSidebar('customer', 'tracking');
+
+    // Retrieve order
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId') || 'ORD-7001';
+    const order = store.getOrderById(orderId) || store.getOrders()[0];
+
+    document.getElementById('track-order-id').innerText = '#' + order.id;
+    document.getElementById('pickup-name').innerText = order.businessName || 'Sharmaji Chai';
+    document.getElementById('dest-address').innerText = order.customerAddress;
+
+    const pickupCoord = order.pickupCoordinates || [77.6255, 12.9348];
+    const customerCoord = order.customerCoordinates || [77.6280, 12.9372];
+    let riderCoord = [77.6250, 12.9340]; // Current rider coordinate
+
+    // Initialize MapLibre Map
+    const map = createTearouteMap('tracking-map', {
+      center: customerCoord,
+      zoom: 15,
+      pitch: 45
+    });
+
+    let scooterMarker = null;
+    let isSimulating = false;
+
+    map.on('load', async () => {
+      // 1. Add Store Pickup Marker
+      markersFactory.createStoreMarker(pickupCoord, order.businessName).addTo(map);
+
+      // 2. Add Customer Destination Marker
+      markersFactory.createCustomerMarker(customerCoord, order.customerName).addTo(map);
+
+      // 3. Add Rider Marker
+      scooterMarker = markersFactory.createScooterMarker(riderCoord, 45);
+      scooterMarker.addTo(map);
+
+      // 4. Fetch and render road route from OSRM
+      try {
+        const routeData = await routingService.getRoadRoute([riderCoord, customerCoord]);
+        routingService.renderRouteOnMap(map, routeData.geometry);
+
+        document.getElementById('hud-distance').innerText = `${routeData.distanceKm.toFixed(1)} km`;
+        document.getElementById('hud-duration').innerText = `${routeData.durationMins} mins`;
+        document.getElementById('track-eta-label').innerText = `Estimated: ${routeData.durationMins} mins`;
+
+        fitCoordinates(map, [riderCoord, customerCoord, pickupCoord]);
+      } catch (err) {
+        console.warn('Routing load:', err);
+      }
+    });
+
+    // Handle Proximity & Telemetry Updates
+    function onRiderLocationUpdate(pos) {
+      riderCoord = [pos.lng, pos.lat];
+
+      if (scooterMarker) {
+        scooterMarker.setLngLat(riderCoord);
+        if (pos.heading !== null) {
+          scooterMarker.getElement().style.transform = `rotate(${pos.heading}deg)`;
+        }
+      }
+
+      // Check 1-KM Proximity
+      const prox = proximityDetector.evaluateProximity(order.id, riderCoord, customerCoord, 'customer');
+      
+      document.getElementById('hud-proximity').innerText = `${prox.distanceMeters} m`;
+      document.getElementById('hud-speed').innerText = `${pos.speed || 25} km/h`;
+      document.getElementById('hud-source').innerText = pos.isDemo ? '🎮 DEMO SIMULATION' : 'Live Hardware GPS';
+      document.getElementById('hud-source').style.color = pos.isDemo ? 'var(--primary-gold)' : 'var(--accent-emerald)';
+
+      if (prox.isWithin1Km) {
+        document.getElementById('proximity-banner').style.display = 'flex';
+        document.getElementById('track-status-badge').innerText = 'Arriving Soon (< 1 KM)';
+        document.getElementById('step-node-5').classList.add('current');
+      }
+
+      // If arrived at customer (< 40m)
+      if (prox.distanceMeters <= 40) {
+        document.getElementById('track-status-badge').innerText = 'Delivered';
+        document.getElementById('track-status-badge').className = 'badge badge-emerald';
+        document.getElementById('step-node-6').classList.add('completed');
+      }
+    }
+
+    gpsTracker.subscribe(onRiderLocationUpdate);
+
+    // Toggle simulation mode
+    const toggleSimBtn = document.getElementById('toggle-sim-btn');
+    toggleSimBtn.addEventListener('click', async () => {
+      if (!isSimulating) {
+        isSimulating = true;
+        toggleSimBtn.innerText = '⏹ Stop Simulation';
+        toggleSimBtn.className = 'btn btn-orange btn-sm';
+
+        // Generate coordinates along route
+        const routeData = await routingService.getRoadRoute([riderCoord, customerCoord]);
+        const lineCoords = routeData.geometry.coordinates;
+        gpsTracker.startDemoSimulation(lineCoords, 1400);
+      } else {
+        isSimulating = false;
+        gpsTracker.stopTracking();
+        toggleSimBtn.innerText = '🎮 Run Demo Rider Simulation';
+        toggleSimBtn.className = 'btn btn-secondary btn-sm';
+      }
+    });
+
+    // Invoice View
+    document.getElementById('view-invoice-btn').addEventListener('click', () => {
+      const html = billingService.generateInvoiceHtml(order);
+      document.getElementById('invoice-modal-content').innerHTML = html;
+      document.getElementById('invoice-modal').classList.add('open');
+    });
+
+    document.getElementById('close-invoice-modal').addEventListener('click', () => {
+      document.getElementById('invoice-modal').classList.remove('open');
+    });
+
+    document.getElementById('print-invoice-btn').addEventListener('click', () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>

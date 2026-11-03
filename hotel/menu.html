@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu & Stock Management — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Menu & Inventory Control</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="add-item-modal-btn" class="btn btn-primary btn-sm">+ Add New Dish</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Dish Preview</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Unit Price</th>
+                  <th>Prep Time</th>
+                  <th>Stock Availability</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="menu-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div id="add-product-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add New Dish to Menu</h3>
+        <button id="close-modal-btn" class="btn btn-secondary btn-sm">✕</button>
+      </div>
+      <form id="add-product-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Dish Name *</label>
+            <input type="text" id="new-item-name" class="form-control" placeholder="e.g. Kashmiri Dum Aloo" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Price (INR) *</label>
+              <input type="number" id="new-item-price" class="form-control" placeholder="280" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prep Time (Mins) *</label>
+              <input type="number" id="new-item-prep" class="form-control" placeholder="15" value="15" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="new-item-cat" class="form-control">
+              <option value="Main Course">Main Course</option>
+              <option value="Starters & Appetizers">Starters & Appetizers</option>
+              <option value="Breads & Rice">Breads & Rice</option>
+              <option value="Desserts & Beverages">Desserts & Beverages</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="new-item-desc" class="form-control" placeholder="Rich aromatics, authentic spices..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancel-modal-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save to Menu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('hotel', 'menu');
+
+    function renderMenu() {
+      const products = store.getProducts();
+      const tbody = document.getElementById('menu-table-body');
+
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td>
+            <img src="${p.image}" alt="${p.name}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
+          </td>
+          <td><strong>${p.name}</strong><br><small style="color: var(--text-muted);">${p.description.slice(0, 40)}...</small></td>
+          <td><span class="badge badge-gray">${p.category}</span></td>
+          <td><strong>₹${p.price}</strong></td>
+          <td>⏱ ${p.prepTimeMins || 10}m</td>
+          <td>
+            <span class="badge ${p.inStock ? 'badge-emerald' : 'badge-red'}">
+              ${p.inStock ? 'In Stock' : 'Sold Out'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm stock-toggle-btn" data-id="${p.id}">
+              ${p.inStock ? 'Mark Sold Out' : 'Mark In Stock'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.stock-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const p = products.find(prod => prod.id === id);
+          if (p) {
+            p.inStock = !p.inStock;
+            store.saveProduct(p);
+            notifications.showToast(`Updated stock status for ${p.name}`, 'info');
+            renderMenu();
+          }
+        });
+      });
+    }
+
+    renderMenu();
+
+    // Modal controls
+    const modal = document.getElementById('add-product-modal');
+    document.getElementById('add-item-modal-btn').addEventListener('click', () => modal.classList.add('open'));
+    document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.remove('open'));
+    document.getElementById('cancel-modal-btn').addEventListener('click', () => modal.classList.remove('open'));
+
+    document.getElementById('add-product-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newProd = {
+        name: document.getElementById('new-item-name').value,
+        price: parseFloat(document.getElementById('new-item-price').value),
+        prepTimeMins: parseInt(document.getElementById('new-item-prep').value, 10),
+        category: document.getElementById('new-item-cat').value,
+        description: document.getElementById('new-item-desc').value,
+        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80',
+        businessId: 'biz_royal_darbar',
+        inStock: true,
+        isAvailable: true
+      };
+
+      store.saveProduct(newProd);
+      notifications.showToast(`Added ${newProd.name} to menu!`, 'success');
+      modal.classList.remove('open');
+      document.getElementById('add-product-form').reset();
+      renderMenu();
+    });
+  </script>
+</body>
+</html>

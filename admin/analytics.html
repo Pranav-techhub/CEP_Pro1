@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Analytics & Reports — TeaRoute Admin</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Platform Reports & Route Optimization Metrics</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="export-platform-csv" class="btn btn-primary btn-sm">Export Master CSV Report</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Platform GMV (Monthly)</span>
+            <div class="stat-value text-gradient-gold">₹24,85,600</div>
+            <div class="stat-trend positive"><span>↑ 34% Month over Month</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Total Kilometres Saved</span>
+            <div class="stat-value text-gradient-emerald">14,280 km</div>
+            <div class="stat-trend positive"><span>Via Heuristic Multi-Batching</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Fleet Fuel Cost Saved</span>
+            <div class="stat-value">₹1,14,240</div>
+            <div class="stat-trend positive"><span>Estimated based on ₹8/km</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Customer Satisfaction</span>
+            <div class="stat-value">★ 4.91 / 5.0</div>
+            <div class="stat-trend positive"><span>Based on 3,420 ratings</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">Batching Efficiency by Micro-Zone</h3>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Delivery Hub Zone</th>
+                  <th>Monthly Multi-Batches</th>
+                  <th>Avg Orders per Batch</th>
+                  <th>Avg Batch Time</th>
+                  <th>Efficiency Gain</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Koramangala 4th & 5th Block</strong></td>
+                  <td>1,420 batches</td>
+                  <td>4.4 orders</td>
+                  <td>18.2 mins</td>
+                  <td><span class="badge badge-emerald">44.2% Saved</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Indiranagar 100 Ft Corridor</strong></td>
+                  <td>980 batches</td>
+                  <td>3.8 orders</td>
+                  <td>21.5 mins</td>
+                  <td><span class="badge badge-emerald">39.1% Saved</span></td>
+                </tr>
+                <tr>
+                  <td><strong>HSR Layout Sector 1-4</strong></td>
+                  <td>860 batches</td>
+                  <td>4.1 orders</td>
+                  <td>19.8 mins</td>
+                  <td><span class="badge badge-emerald">41.8% Saved</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { billingService } from '/src/services/billingService.js';
+
+    renderDashboardSidebar('admin', 'analytics');
+
+    document.getElementById('export-platform-csv').addEventListener('click', () => {
+      const orders = store.getOrders();
+      billingService.exportOrdersToCsv(orders, 'tearoute-platform-master-analytics.csv');
+    });
+  </script>
+</body>
+</html>

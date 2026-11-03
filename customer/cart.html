@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Shopping Cart & Checkout</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/customer/explore.html" class="btn btn-secondary btn-sm">+ Add More Items</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="grid grid-cols-3 gap-8" id="cart-layout">
+          <!-- Cart Items Column -->
+          <div style="grid-column: span 2;" id="cart-items-wrapper">
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3>Order Items</h3>
+                <button id="clear-cart-btn" class="btn btn-secondary btn-sm" style="color: var(--accent-red);">Clear Cart</button>
+              </div>
+              <div id="cart-items-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Delivery & Schedule Options -->
+            <div class="card">
+              <h3 style="margin-bottom: 1.25rem;">Delivery Details & Scheduling</h3>
+              
+              <div class="form-group">
+                <label class="form-label">Delivery Address</label>
+                <input type="text" id="delivery-address-input" class="form-control" value="Flat 302, Prestige Pine Wood, Koramangala 3rd Block, Bengaluru" required>
+              </div>
+
+              <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Delivery Timing</label>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="radio" name="timing-choice" value="now" checked id="radio-now">
+                    <span>⚡ Order Now (Immediate Prep ~15 mins)</span>
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="radio" name="timing-choice" value="schedule" id="radio-schedule">
+                    <span>📅 Schedule for Later</span>
+                  </label>
+                </div>
+
+                <div id="schedule-picker-box" style="display: none; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">Schedule Date</label>
+                      <input type="date" id="schedule-date" class="form-control">
+                    </div>
+                    <div>
+                      <label class="form-label">Delivery Time</label>
+                      <input type="time" id="schedule-time" class="form-control" value="09:30">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Special Delivery Instructions (Optional)</label>
+                <input type="text" id="delivery-instructions" class="form-control" placeholder="e.g. Leave at door, call when at gate, extra spicy poha">
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary & Billing Column -->
+          <div>
+            <div class="card" style="position: sticky; top: calc(var(--topbar-height) + 1rem);">
+              <h3 style="margin-bottom: 1.25rem;">Payment Summary</h3>
+
+              <!-- Promo Coupon -->
+              <div class="form-group">
+                <label class="form-label">Promo Coupon</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="coupon-input" class="form-control" placeholder="Try: TEAROUTE20" style="text-transform: uppercase;">
+                  <button type="button" id="apply-coupon-btn" class="btn btn-secondary btn-sm">Apply</button>
+                </div>
+                <div id="coupon-feedback" style="font-size: 0.775rem; margin-top: 0.35rem; display: none;"></div>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0;">
+
+              <!-- Bill Breakdown -->
+              <div style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.925rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-secondary);">Item Subtotal</span>
+                  <span id="bill-subtotal" style="font-weight: 600;">₹0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--accent-emerald);" id="bill-discount-row">
+                  <span>Coupon Discount</span>
+                  <span id="bill-discount">- ₹0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-secondary);">GST Tax (5%)</span>
+                  <span id="bill-tax">₹0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-secondary);">Smart Batch Delivery</span>
+                  <span id="bill-delivery">₹25</span>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid var(--border-medium); margin: 0.5rem 0;">
+
+                <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700;">
+                  <span>To Pay</span>
+                  <span class="text-gradient-gold" id="bill-total">₹0</span>
+                </div>
+              </div>
+
+              <!-- Payment Method Selection -->
+              <div style="margin-top: 1.5rem;">
+                <label class="form-label">Payment Mode</label>
+                <select id="payment-method-select" class="form-control">
+                  <option value="ONLINE_UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+                  <option value="CARD">Credit / Debit Card</option>
+                  <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+                </select>
+              </div>
+
+              <button type="button" id="place-order-btn" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1.5rem;">
+                Place Order Now →
+              </button>
+
+              <div style="text-align: center; margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-muted);">
+                🔒 256-Bit SSL Encrypted Checkout
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { billingService } from '/src/services/billingService.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('customer', 'cart');
+
+    let appliedCouponCode = null;
+
+    // Toggle scheduling
+    const radioNow = document.getElementById('radio-now');
+    const radioSchedule = document.getElementById('radio-schedule');
+    const scheduleBox = document.getElementById('schedule-picker-box');
+    const scheduleDate = document.getElementById('schedule-date');
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    scheduleDate.value = tomorrow.toISOString().split('T')[0];
+
+    radioNow.addEventListener('change', () => scheduleBox.style.display = 'none');
+    radioSchedule.addEventListener('change', () => scheduleBox.style.display = 'block');
+
+    function renderCart() {
+      const cart = store.getCart();
+      const listEl = document.getElementById('cart-items-list');
+      const placeBtn = document.getElementById('place-order-btn');
+
+      if (cart.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🛒</div>
+            <h3>Your cart is empty</h3>
+            <p style="margin-bottom: 1.25rem;">Looks like you haven't added hot chai or snacks yet.</p>
+            <a href="/customer/explore.html" class="btn btn-primary btn-sm">Explore Delicious Menus</a>
+          </div>
+        `;
+        placeBtn.disabled = true;
+        updateTotals([]);
+        return;
+      }
+
+      placeBtn.disabled = false;
+
+      listEl.innerHTML = cart.map(item => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--border-subtle);">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="${item.product.image}" alt="${item.product.name}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">${item.product.name}</div>
+              <div style="font-size: 0.85rem; color: var(--primary-gold);">₹${item.product.price} each</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <button class="btn btn-secondary btn-sm qty-btn" data-id="${item.product.id}" data-action="decrease" style="padding: 0.2rem 0.6rem;">-</button>
+            <span style="font-weight: 700; min-width: 20px; text-align: center;">${item.quantity}</span>
+            <button class="btn btn-secondary btn-sm qty-btn" data-id="${item.product.id}" data-action="increase" style="padding: 0.2rem 0.6rem;">+</button>
+            <span style="font-weight: 700; width: 60px; text-align: right;">₹${item.product.price * item.quantity}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Add Quantity Handlers
+      document.querySelectorAll('.qty-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const action = btn.getAttribute('data-action');
+          const currentItem = cart.find(i => i.product.id === id);
+          if (currentItem) {
+            const newQty = action === 'increase' ? currentItem.quantity + 1 : currentItem.quantity - 1;
+            store.updateCartQuantity(id, newQty);
+            renderCart();
+          }
+        });
+      });
+
+      updateTotals(cart);
+    }
+
+    function updateTotals(cart) {
+      const breakdown = billingService.calculateBill(cart, appliedCouponCode);
+
+      document.getElementById('bill-subtotal').innerText = `₹${breakdown.subtotal}`;
+      document.getElementById('bill-discount').innerText = `- ₹${breakdown.discountAmount}`;
+      document.getElementById('bill-tax').innerText = `₹${breakdown.taxAmount}`;
+      document.getElementById('bill-delivery').innerText = breakdown.deliveryFee === 0 ? 'FREE' : `₹${breakdown.deliveryFee}`;
+      document.getElementById('bill-total').innerText = `₹${breakdown.totalAmount}`;
+    }
+
+    // Coupon logic
+    document.getElementById('apply-coupon-btn').addEventListener('click', () => {
+      const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+      const feedback = document.getElementById('coupon-feedback');
+      feedback.style.display = 'block';
+
+      if (code === 'TEAROUTE20' || code === 'CHAI10') {
+        appliedCouponCode = code;
+        feedback.innerText = `✓ Coupon ${code} applied successfully!`;
+        feedback.style.color = 'var(--accent-emerald)';
+        notifications.showToast(`Coupon ${code} applied!`, 'success');
+      } else {
+        appliedCouponCode = null;
+        feedback.innerText = '✕ Invalid promo code. Try TEAROUTE20';
+        feedback.style.color = 'var(--accent-red)';
+      }
+      renderCart();
+    });
+
+    document.getElementById('clear-cart-btn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear your cart?')) {
+        store.clearCart();
+        renderCart();
+      }
+    });
+
+    // Place Order
+    document.getElementById('place-order-btn').addEventListener('click', () => {
+      const cart = store.getCart();
+      if (cart.length === 0) return;
+
+      const user = store.getCurrentUser();
+      const firstItemBiz = cart[0].product.businessId || 'biz_sharma_chai';
+      const biz = store.getBusinessById(firstItemBiz) || store.getBusinesses()[0];
+      const breakdown = billingService.calculateBill(cart, appliedCouponCode);
+
+      const isScheduled = radioSchedule.checked;
+      const scheduledAt = isScheduled ? `${scheduleDate.value}T${document.getElementById('schedule-time').value}:00` : null;
+
+      const newOrder = {
+        id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+        businessId: biz.id,
+        businessName: biz.name,
+        businessAddress: biz.address,
+        pickupCoordinates: biz.coordinates,
+        customerId: user ? user.uid : 'cust_01',
+        customerName: user ? user.name : 'Rahul Sharma',
+        customerPhone: user ? user.phone : '+91 98765 43210',
+        customerAddress: document.getElementById('delivery-address-input').value,
+        customerCoordinates: [77.6280, 12.9372],
+        items: cart.map(i => ({
+          id: i.product.id,
+          name: i.product.name,
+          price: i.product.price,
+          quantity: i.quantity
+        })),
+        subtotal: breakdown.subtotal,
+        discountAmount: breakdown.discountAmount,
+        taxAmount: breakdown.taxAmount,
+        deliveryFee: breakdown.deliveryFee,
+        totalAmount: breakdown.totalAmount,
+        status: isScheduled ? 'Scheduled' : 'Preparing',
+        paymentStatus: 'PAID',
+        paymentMethod: document.getElementById('payment-method-select').value,
+        createdAt: new Date().toISOString(),
+        scheduledFor: scheduledAt,
+        batchId: null,
+        deliveryPartnerId: null
+      };
+
+      store.saveOrder(newOrder);
+      store.clearCart();
+
+      notifications.showToast(`Order #${newOrder.id} placed successfully!`, 'success', 'Order Confirmed');
+
+      setTimeout(() => {
+        window.location.href = `/customer/tracking.html?orderId=${newOrder.id}`;
+      }, 700);
+    });
+
+    renderCart();
+  </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delivery Batches — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Multi-Order Dispatch Batches</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/shopkeeper/route-planner.html" class="btn btn-primary btn-sm">+ Plan New Batch</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Batch Ref</th>
+                  <th>Dispatched Time</th>
+                  <th>Assigned Rider</th>
+                  <th>Stops Count</th>
+                  <th>Total Distance</th>
+                  <th>Batch Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="batches-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+
+    renderDashboardSidebar('shopkeeper', 'delivery-batches');
+
+    function renderBatches() {
+      const batches = store.getBatches();
+      const tbody = document.getElementById('batches-tbody');
+
+      if (batches.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 3rem;">
+              No batches dispatched yet. <a href="/shopkeeper/route-planner.html">Open Smart Route Planner</a> to create your first multi-drop batch!
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = batches.map(b => `
+        <tr>
+          <td><strong>${b.id}</strong></td>
+          <td style="color: var(--text-muted); font-size: 0.85rem;">
+            ${new Date(b.dispatchedAt || b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </td>
+          <td><strong>${b.assignedRiderName || 'Unassigned'}</strong></td>
+          <td>${b.stops.length} Customer Drops</td>
+          <td>${b.totalDistanceKm} km</td>
+          <td>
+            <span class="badge ${b.status === 'COMPLETED' ? 'badge-emerald' : 'badge-orange'}">
+              ${b.status}
+            </span>
+          </td>
+          <td>
+            <a href="/delivery/navigation.html?batchId=${b.id}" class="btn btn-secondary btn-sm">
+              Live Rider View →
+            </a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    renderBatches();
+  </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fleet Deliveries & Batches — TeaRoute Admin</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">All Active Fleet Deliveries & Batches</h1>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Batch / Order ID</th>
+                  <th>Merchant Stall</th>
+                  <th>Assigned Rider</th>
+                  <th>Customer Drops</th>
+                  <th>Distance</th>
+                  <th>Status</th>
+                  <th>Telemetry Inspection</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>BATCH-7001</strong></td>
+                  <td>Sharmaji Chai & Nashta</td>
+                  <td>Amit Verma (EV Scooter)</td>
+                  <td>5 Stops Grouped</td>
+                  <td>2.8 km</td>
+                  <td><span class="badge badge-orange">IN TRANSIT</span></td>
+                  <td>
+                    <a href="/customer/tracking.html?orderId=ORD-7001" class="btn btn-secondary btn-sm">
+                      Inspect Telemetry →
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>ORD-6821</strong></td>
+                  <td>The Royal Darbar</td>
+                  <td>Deepak Kumar (Bike)</td>
+                  <td>1 Drop</td>
+                  <td>3.2 km</td>
+                  <td><span class="badge badge-emerald">DELIVERED</span></td>
+                  <td>
+                    <a href="/customer/tracking.html?orderId=ORD-7002" class="btn btn-secondary btn-sm">
+                      Inspect Telemetry →
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    renderDashboardSidebar('admin', 'deliveries');
+  </script>
+</body>
+</html>

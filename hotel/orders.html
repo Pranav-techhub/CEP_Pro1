@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Hotel Orders — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">All Restaurant Orders</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="export-orders-btn" class="btn btn-secondary btn-sm">Export CSV</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Order Ref</th>
+                  <th>Placed At</th>
+                  <th>Customer</th>
+                  <th>Delivery Address</th>
+                  <th>Items Ordered</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Transition Action</th>
+                </tr>
+              </thead>
+              <tbody id="orders-full-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { billingService } from '/src/services/billingService.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('hotel', 'orders');
+
+    const orders = store.getOrders();
+    const tbody = document.getElementById('orders-full-tbody');
+
+    function renderOrders() {
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td><strong>#${o.id}</strong></td>
+          <td style="color: var(--text-muted); font-size: 0.85rem;">
+            ${new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </td>
+          <td>${o.customerName}</td>
+          <td style="font-size: 0.825rem; max-width: 200px;">${o.customerAddress}</td>
+          <td>${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</td>
+          <td><strong>₹${o.totalAmount}</strong></td>
+          <td><span class="badge badge-emerald">${o.status}</span></td>
+          <td>
+            <select class="form-control status-select" data-id="${o.id}" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; width: 150px;">
+              <option value="Preparing" ${o.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+              <option value="Ready for Pickup" ${o.status === 'Ready for Pickup' ? 'selected' : ''}>Ready for Pickup</option>
+              <option value="Delivery Partner Assigned" ${o.status === 'Delivery Partner Assigned' ? 'selected' : ''}>Assign Rider</option>
+              <option value="On the Way" ${o.status === 'On the Way' ? 'selected' : ''}>On the Way</option>
+              <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.status-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const id = sel.getAttribute('data-id');
+          const nextVal = e.target.value;
+          store.updateOrderStatus(id, nextVal);
+          notifications.showToast(`Order #${id} marked as ${nextVal}`, 'info');
+        });
+      });
+    }
+
+    renderOrders();
+
+    document.getElementById('export-orders-btn').addEventListener('click', () => {
+      billingService.exportOrdersToCsv(orders, 'royal-darbar-orders.csv');
+    });
+  </script>
+</body>
+</html>

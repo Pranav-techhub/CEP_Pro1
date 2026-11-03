@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Assignments — TeaRoute Rider</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Delivery Batch Offers & Assignments</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/delivery/navigation.html" class="btn btn-primary btn-sm">Open Live GPS Navigation</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card" style="margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1.25rem;">Active Assigned Batch</h3>
+          <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-md); padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+              <div>
+                <span class="badge badge-gold">MULTI-DROP ROUTE</span>
+                <h2 style="font-size: 1.5rem; margin-top: 0.35rem;">Batch #BATCH-7001 (5 Orders)</h2>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                  Stall Pickup: <strong>Sharmaji Chai & Nashta</strong> • Koramangala 4th Block
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-emerald);">₹220 Pay</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Est. 22 mins • 2.8 km</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <a href="/delivery/navigation.html" class="btn btn-orange btn-lg" style="flex: 1;">
+                Start Multi-Stop GPS Run →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    renderDashboardSidebar('delivery', 'assignments');
+  </script>
+</body>
+</html>

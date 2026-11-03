@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Customer Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/customer/cart.html" class="btn btn-secondary btn-sm" id="cart-btn-header">
+            🛒 Cart (<span id="cart-count-header">0</span>)
+          </a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Active Live Order Alert Banner if in transit -->
+        <div id="active-order-banner" class="card" style="display: none; border-left: 4px solid var(--accent-orange); margin-bottom: 2rem; background: rgba(255, 107, 0, 0.08);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div class="brand-icon-box" style="width: 44px; height: 44px;">🛵</div>
+              <div>
+                <div style="font-weight: 700; font-size: 1.05rem;" id="active-banner-title">Order #ORD-7001 is Out for Delivery!</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);" id="active-banner-subtitle">
+                  Rider Amit Verma is en route • Estimated arrival: 8 mins
+                </div>
+              </div>
+            </div>
+            <a href="/customer/tracking.html" class="btn btn-orange btn-sm">Track Live on Map →</a>
+          </div>
+        </div>
+
+        <!-- KPI Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Active Orders</span>
+              <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--primary-gold);">📦</div>
+            </div>
+            <div class="stat-value" id="stat-active-count">1</div>
+            <div class="stat-trend positive"><span>⚡ Live in transit</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Completed Orders</span>
+              <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">✓</div>
+            </div>
+            <div class="stat-value" id="stat-completed-count">14</div>
+            <div class="stat-trend positive"><span>↑ 4 this week</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Batch Delivery Savings</span>
+              <div class="stat-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);">₹</div>
+            </div>
+            <div class="stat-value text-gradient-gold">₹340</div>
+            <div class="stat-trend positive"><span>Reduced delivery fees</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Favorite Vendor</span>
+              <div class="stat-icon" style="background: rgba(255, 107, 0, 0.15); color: var(--accent-orange);">☕</div>
+            </div>
+            <div class="stat-value" style="font-size: 1.25rem;">Sharmaji Chai</div>
+            <div class="stat-trend"><span>8 orders placed</span></div>
+          </div>
+        </div>
+
+        <!-- Quick Reorder & Featured Hub Section -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h2>Featured Vendors & Stalls</h2>
+          <a href="/customer/explore.html" class="btn btn-secondary btn-sm">View All Vendors →</a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6" id="vendors-grid" style="margin-bottom: 3rem;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Recent Order History Snippet -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3>Recent Orders</h3>
+            <a href="/customer/orders.html" class="btn btn-secondary btn-sm">Full History →</a>
+          </div>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Vendor</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { securityGuard } from '/src/firebase/security.js';
+
+    // Verify session
+    securityGuard.requireAuth(['customer', 'admin']);
+    renderDashboardSidebar('customer', 'dashboard');
+
+    // Update cart counter
+    function updateCartCounter() {
+      const cart = store.getCart();
+      const count = cart.reduce((s, i) => s + i.quantity, 0);
+      const badge = document.getElementById('cart-count-header');
+      if (badge) badge.innerText = count;
+    }
+    updateCartCounter();
+
+    // Load active orders & stats
+    const orders = store.getOrders();
+    const myOrders = orders.filter(o => o.customerId === 'cust_01' || !o.customerId);
+    const activeOrder = myOrders.find(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+
+    if (activeOrder) {
+      const banner = document.getElementById('active-order-banner');
+      banner.style.display = 'block';
+      document.getElementById('active-banner-title').innerText = `Order #${activeOrder.id} is ${activeOrder.status}`;
+      document.getElementById('active-banner-subtitle').innerText = `${activeOrder.businessName} • ${activeOrder.items.length} items • Total: ₹${activeOrder.totalAmount}`;
+    }
+
+    document.getElementById('stat-active-count').innerText = activeOrder ? '1' : '0';
+    document.getElementById('stat-completed-count').innerText = myOrders.filter(o => o.status === 'Delivered').length || 14;
+
+    // Render vendors
+    const businesses = store.getBusinesses();
+    const vendorsGrid = document.getElementById('vendors-grid');
+    vendorsGrid.innerHTML = businesses.map(b => `
+      <div class="card card-interactive" style="overflow: hidden; padding: 0;">
+        <img src="${b.image}" alt="${b.name}" style="width: 100%; height: 160px; object-fit: cover;">
+        <div style="padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <h4 style="font-size: 1.1rem;">${b.name}</h4>
+            <span class="badge badge-gold">★ ${b.rating}</span>
+          </div>
+          <p style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--text-secondary); line-height: 1.4;">${b.description}</p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">${b.category}</span>
+            <a href="/customer/explore.html?biz=${b.id}" class="btn btn-primary btn-sm">Order Menu →</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Render Recent Orders Table
+    const tbody = document.getElementById('recent-orders-tbody');
+    tbody.innerHTML = myOrders.slice(0, 4).map(o => `
+      <tr>
+        <td><strong>${o.id}</strong></td>
+        <td>${o.businessName}</td>
+        <td>${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</td>
+        <td><strong>₹${o.totalAmount}</strong></td>
+        <td><span class="badge badge-emerald">${o.status}</span></td>
+        <td>
+          <a href="/customer/tracking.html?orderId=${o.id}" class="btn btn-secondary btn-sm">Track / Invoice</a>
+        </td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>

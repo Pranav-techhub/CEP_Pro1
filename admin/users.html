@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Directory & Roles — TeaRoute Admin</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Global User Directory & Roles</h1>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Assigned Role</th>
+                  <th>Status</th>
+                  <th>Security Verification</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Rahul Sharma</strong></td>
+                  <td>customer@tearoute.io</td>
+                  <td><span class="badge badge-blue">Customer</span></td>
+                  <td><span class="badge badge-emerald">ACTIVE</span></td>
+                  <td>Verified Mobile (OTP)</td>
+                </tr>
+                <tr>
+                  <td><strong>Ramesh Sharma</strong></td>
+                  <td>shopkeeper@tearoute.io</td>
+                  <td><span class="badge badge-gold">Shopkeeper</span></td>
+                  <td><span class="badge badge-emerald">ACTIVE</span></td>
+                  <td>FSSAI License Verified</td>
+                </tr>
+                <tr>
+                  <td><strong>Vikram Oberoi</strong></td>
+                  <td>hotel@tearoute.io</td>
+                  <td><span class="badge badge-gold">Hotel Owner</span></td>
+                  <td><span class="badge badge-emerald">ACTIVE</span></td>
+                  <td>GSTIN Verified</td>
+                </tr>
+                <tr>
+                  <td><strong>Amit Verma</strong></td>
+                  <td>rider@tearoute.io</td>
+                  <td><span class="badge badge-orange">Delivery Partner</span></td>
+                  <td><span class="badge badge-emerald">ACTIVE</span></td>
+                  <td>DL & Vehicle Reg Checked</td>
+                </tr>
+                <tr>
+                  <td><strong>System Admin</strong></td>
+                  <td>admin@tearoute.io</td>
+                  <td><span class="badge badge-red">Administrator</span></td>
+                  <td><span class="badge badge-emerald">ACTIVE</span></td>
+                  <td>Root Hardware Token</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    renderDashboardSidebar('admin', 'users');
+  </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Inventory & Snacks — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Chai & Snacks Inventory</h1>
+        </div>
+        <div class="topbar-right">
+          <span class="status-pill online">Stall Active</span>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Item Preview</th>
+                  <th>Snack / Beverage</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Prep Time</th>
+                  <th>Stock Status</th>
+                  <th>Toggle Stock</th>
+                </tr>
+              </thead>
+              <tbody id="vendor-prods-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('shopkeeper', 'products');
+
+    function renderProducts() {
+      const prods = store.getProducts('biz_sharma_chai');
+      const tbody = document.getElementById('vendor-prods-tbody');
+
+      tbody.innerHTML = prods.map(p => `
+        <tr>
+          <td>
+            <img src="${p.image}" alt="${p.name}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;">
+          </td>
+          <td><strong>${p.name}</strong></td>
+          <td><span class="badge badge-gray">${p.category}</span></td>
+          <td><strong>₹${p.price}</strong></td>
+          <td>⏱ ${p.prepTimeMins}m</td>
+          <td>
+            <span class="badge ${p.inStock ? 'badge-emerald' : 'badge-red'}">
+              ${p.inStock ? 'In Stock' : 'Out of Stock'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm toggle-stock-btn" data-id="${p.id}">
+              ${p.inStock ? 'Mark Finished' : 'Restock'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.toggle-stock-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const p = prods.find(item => item.id === id);
+          if (p) {
+            p.inStock = !p.inStock;
+            store.saveProduct(p);
+            notifications.showToast(`Updated stock status for ${p.name}`, 'info');
+            renderProducts();
+          }
+        });
+      });
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>

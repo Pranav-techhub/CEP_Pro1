@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turn-by-Turn GPS Navigation — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/maps.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <style>
+    /* Full-screen navigation layout */
+    .nav-fullscreen-shell {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #050811;
+    }
+
+    #turn-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating Top Turn Banner */
+    .turn-top-hud {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Floating Bottom Action Drawer */
+    .turn-bottom-card {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      right: 1.5rem;
+      max-width: 520px;
+      margin: 0 auto;
+      z-index: 100;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-touch-delivered {
+      width: 100%;
+      padding: 1.1rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-emerald) 0%, #059669 100%);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--accent-emerald-glow);
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .btn-touch-delivered:hover {
+      background: linear-gradient(135deg, #34D399 0%, var(--accent-emerald) 100%);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-fullscreen-shell">
+    <!-- Top HUD Turn Directive -->
+    <div class="turn-top-hud">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--primary-gold); color: #050811; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;">
+          ↱
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 1.05rem;" id="hud-turn-text">In 200m, turn right onto 80 Feet Road</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);" id="hud-next-stop-title">Next: Stop 1 • Rahul Sharma</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="toggle-sim-mode" class="btn btn-secondary btn-sm" style="border-color: var(--primary-gold); font-size: 0.75rem;">
+          🎮 Run Demo Simulation
+        </button>
+        <a href="/delivery/dashboard.html" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">
+          ✕ Exit
+        </a>
+      </div>
+    </div>
+
+    <!-- MapLibre Fullscreen Canvas -->
+    <div id="turn-map"></div>
+
+    <!-- Proximity Alert Banner -->
+    <div id="proximity-banner" class="proximity-alert-banner" style="display: none; top: 5.5rem;">
+      <span>⚡</span>
+      <span>1 KM PROXIMITY: Customer notified. Approach destination carefully.</span>
+    </div>
+
+    <!-- Bottom Destination Card & Touch Action -->
+    <div class="turn-bottom-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-gold" id="current-stop-badge">CURRENT STOP 1 OF 5</span>
+          <h3 style="font-size: 1.25rem; margin-top: 0.35rem;" id="dest-customer-name">Rahul Sharma</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted);" id="dest-customer-address">
+            Flat 302, Prestige Pine Wood, Koramangala 3rd Block
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--primary-gold);" id="dest-eta">
+            4 mins
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);" id="dest-distance">450 meters</div>
+        </div>
+      </div>
+
+      <!-- Items in Order -->
+      <div style="font-size: 0.825rem; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;" id="dest-items-summary">
+        📦 2x Special Masala Kulhad Chai + 1x Indori Poha
+      </div>
+
+      <!-- Touch-Friendly "Mark Delivered" Action Button -->
+      <button type="button" class="btn-touch-delivered" id="mark-delivered-touch-btn">
+        <span>✓</span>
+        <span>Mark Stop 1 Delivered & Next Stop →</span>
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { store } from '/src/services/store.js';
+    import { createTearouteMap, fitCoordinates } from '/src/maps/map.js';
+    import { markersFactory } from '/src/maps/markers.js';
+    import { routingService } from '/src/maps/routing.js';
+    import { gpsTracker } from '/src/maps/geolocation.js';
+    import { proximityDetector } from '/src/maps/nearbyDetection.js';
+    import { distanceCalculator } from '/src/maps/distanceCalculator.js';
+    import { batchingEngine } from '/src/services/batchingEngine.js';
+    import { notifications } from '/src/services/notificationService.js';
+    import { securityGuard } from '/src/firebase/security.js';
+
+    securityGuard.requireAuth(['delivery', 'admin']);
+
+    // Retrieve active batch or orders
+    const orders = store.getOrders('biz_sharma_chai').slice(0, 5);
+    let currentStopIndex = 0;
+    let riderCoord = [77.6250, 12.9340]; // Initial position near stall
+    let isSimulating = false;
+
+    // Initialize MapLibre
+    const map = createTearouteMap('turn-map', {
+      center: riderCoord,
+      zoom: 16,
+      pitch: 55, // Steep navigation perspective
+      bearing: 25
+    });
+
+    let riderMarker = null;
+    let stopMarkers = [];
+
+    async function loadCurrentStopRoute() {
+      if (currentStopIndex >= orders.length) {
+        alert('🎉 All 5 stops in this batch have been delivered successfully! Great job!');
+        window.location.href = '/delivery/dashboard.html';
+        return;
+      }
+
+      const activeOrder = orders[currentStopIndex];
+      const targetCoord = activeOrder.customerCoordinates;
+
+      document.getElementById('current-stop-badge').innerText = `CURRENT STOP ${currentStopIndex + 1} OF ${orders.length}`;
+      document.getElementById('dest-customer-name').innerText = activeOrder.customerName;
+      document.getElementById('dest-customer-address').innerText = activeOrder.customerAddress;
+      document.getElementById('dest-items-summary').innerText = `📦 ` + activeOrder.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
+      document.getElementById('hud-next-stop-title').innerText = `Next: Stop ${currentStopIndex + 1} • ${activeOrder.customerName}`;
+      document.getElementById('mark-delivered-touch-btn').innerHTML = `<span>✓</span><span>Mark Stop ${currentStopIndex + 1} Delivered & Next Stop →</span>`;
+
+      // Clear existing markers
+      stopMarkers.forEach(m => m.remove());
+      stopMarkers = [];
+
+      // Add remaining stops to map
+      orders.forEach((o, idx) => {
+        if (idx >= currentStopIndex) {
+          const m = markersFactory.createCustomerMarker(o.customerCoordinates, o.customerName, idx + 1).addTo(map);
+          stopMarkers.push(m);
+        }
+      });
+
+      // Render road route to current stop
+      try {
+        const routeData = await routingService.getRoadRoute([riderCoord, targetCoord]);
+        routingService.renderRouteOnMap(map, routeData.geometry);
+        document.getElementById('dest-distance').innerText = `${routeData.distanceKm.toFixed(1)} km`;
+        document.getElementById('dest-eta').innerText = `${routeData.durationMins} mins`;
+        fitCoordinates(map, [riderCoord, targetCoord], 80);
+      } catch (err) {
+        console.warn('Nav route:', err);
+      }
+    }
+
+    map.on('load', async () => {
+      riderMarker = markersFactory.createScooterMarker(riderCoord, 30);
+      riderMarker.addTo(map);
+
+      loadCurrentStopRoute();
+    });
+
+    // Handle Location Updates & 1-KM Proximity
+    function onLocationUpdate(pos) {
+      riderCoord = [pos.lng, pos.lat];
+      if (riderMarker) {
+        riderMarker.setLngLat(riderCoord);
+        if (pos.heading !== null) {
+          riderMarker.getElement().style.transform = `rotate(${pos.heading}deg)`;
+          map.setBearing(pos.heading);
+        }
+      }
+
+      if (currentStopIndex < orders.length) {
+        const targetCoord = orders[currentStopIndex].customerCoordinates;
+        const prox = proximityDetector.evaluateProximity(
+          orders[currentStopIndex].id,
+          riderCoord,
+          targetCoord,
+          'delivery'
+        );
+
+        document.getElementById('dest-distance').innerText = `${prox.distanceMeters} m`;
+
+        if (prox.isWithin1Km) {
+          document.getElementById('proximity-banner').style.display = 'flex';
+        }
+      }
+    }
+
+    gpsTracker.subscribe(onLocationUpdate);
+
+    // Toggle Simulation Mode
+    const toggleSimBtn = document.getElementById('toggle-sim-mode');
+    toggleSimBtn.addEventListener('click', async () => {
+      if (!isSimulating) {
+        isSimulating = true;
+        toggleSimBtn.innerText = '⏹ Stop Sim';
+        toggleSimBtn.className = 'btn btn-orange btn-sm';
+
+        const targetCoord = orders[currentStopIndex].customerCoordinates;
+        const route = await routingService.getRoadRoute([riderCoord, targetCoord]);
+        gpsTracker.startDemoSimulation(route.geometry.coordinates, 1200);
+      } else {
+        isSimulating = false;
+        gpsTracker.stopTracking();
+        toggleSimBtn.innerText = '🎮 Run Demo Simulation';
+        toggleSimBtn.className = 'btn btn-secondary btn-sm';
+      }
+    });
+
+    // Mark Stop Delivered Touch Button
+    document.getElementById('mark-delivered-touch-btn').addEventListener('click', () => {
+      const order = orders[currentStopIndex];
+      store.updateOrderStatus(order.id, 'Delivered');
+      notifications.showToast(`Stop ${currentStopIndex + 1} (${order.customerName}) delivered!`, 'success', 'Stop Completed');
+
+      currentStopIndex++;
+      document.getElementById('proximity-banner').style.display = 'none';
+
+      if (isSimulating) {
+        gpsTracker.stopTracking();
+        isSimulating = false;
+        toggleSimBtn.innerText = '🎮 Run Demo Simulation';
+        toggleSimBtn.className = 'btn btn-secondary btn-sm';
+      }
+
+      loadCurrentStopRoute();
+    });
+  </script>
+</body>
+</html>

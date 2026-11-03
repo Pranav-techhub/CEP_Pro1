@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Orders — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Chai Stall Orders & Preparation</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/shopkeeper/route-planner.html" class="btn btn-primary btn-sm">Smart Batch Planner</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Order Ref</th>
+                  <th>Customer</th>
+                  <th>Delivery Address</th>
+                  <th>Items Ordered</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Batch ID</th>
+                </tr>
+              </thead>
+              <tbody id="vendor-orders-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+
+    renderDashboardSidebar('shopkeeper', 'orders');
+
+    const orders = store.getOrders('biz_sharma_chai');
+    const tbody = document.getElementById('vendor-orders-tbody');
+
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td><strong>#${o.id}</strong></td>
+        <td><strong>${o.customerName}</strong></td>
+        <td style="font-size: 0.825rem; max-width: 200px;">${o.customerAddress}</td>
+        <td>${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</td>
+        <td><strong>₹${o.totalAmount}</strong></td>
+        <td><span class="badge badge-emerald">${o.status}</span></td>
+        <td>
+          ${o.batchId ? `<span class="badge badge-gold">${o.batchId}</span>` : '<span style="color: var(--text-muted);">Unbatched</span>'}
+        </td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>

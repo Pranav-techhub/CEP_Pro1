@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merchant KYC & Approvals — TeaRoute Admin</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Merchant Approvals & KYC Verification</h1>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="card">
+          <h3 style="margin-bottom: 1.25rem;">Merchant Verification Queue</h3>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Business Name</th>
+                  <th>Owner</th>
+                  <th>Category</th>
+                  <th>Address & Location</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="approvals-tbody">
+                <tr>
+                  <td><strong>Chai Junction Indiranagar</strong></td>
+                  <td>Sunil Mehta</td>
+                  <td>Chai & Snacks</td>
+                  <td>12th Main, Indiranagar, Bengaluru</td>
+                  <td><span class="badge badge-gold">PENDING KYC</span></td>
+                  <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                      <button class="btn btn-emerald btn-sm approve-btn">✓ Approve</button>
+                      <button class="btn btn-secondary btn-sm reject-btn" style="color: var(--accent-red);">✕ Reject</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Sharmaji Chai & Nashta</strong></td>
+                  <td>Ramesh Sharma</td>
+                  <td>Chai & Breakfast</td>
+                  <td>80 Feet Rd, Koramangala</td>
+                  <td><span class="badge badge-emerald">APPROVED</span></td>
+                  <td><span style="font-size: 0.8rem; color: var(--text-muted);">Live On Platform</span></td>
+                </tr>
+                <tr>
+                  <td><strong>The Royal Darbar Gourmet</strong></td>
+                  <td>Vikram Oberoi</td>
+                  <td>Fine Dining Restaurant</td>
+                  <td>Plot 42, Indiranagar</td>
+                  <td><span class="badge badge-emerald">APPROVED</span></td>
+                  <td><span style="font-size: 0.8rem; color: var(--text-muted);">Live On Platform</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('admin', 'businesses');
+
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr');
+        tr.querySelector('.badge').className = 'badge badge-emerald';
+        tr.querySelector('.badge').innerText = 'APPROVED';
+        e.target.parentElement.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Live On Platform</span>`;
+        notifications.showToast('Merchant approved for on-demand ordering.', 'success');
+      });
+    });
+
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr');
+        tr.querySelector('.badge').className = 'badge badge-red';
+        tr.querySelector('.badge').innerText = 'REJECTED';
+        e.target.parentElement.innerHTML = `<span style="font-size: 0.8rem; color: var(--accent-red);">Rejected</span>`;
+        notifications.showToast('Merchant application rejected.', 'error');
+      });
+    });
+  </script>
+</body>
+</html>

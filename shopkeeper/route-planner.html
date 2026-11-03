@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Multi-Order Route Planner — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/maps.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Smart Multi-Order Batch Planner</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="recalculate-btn" class="btn btn-secondary btn-sm">
+            🔄 Recalculate TSP Sequence
+          </button>
+          <a href="/shopkeeper/delivery-batches.html" class="btn btn-secondary btn-sm">
+            View All Batches
+          </a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Algorithmic Insights Banner -->
+        <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem; border-left: 4px solid var(--primary-gold);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div class="badge badge-gold" style="margin-bottom: 0.35rem;">HEURISTIC BATCH PROPOSAL ACTIVE</div>
+              <h2 style="font-size: 1.35rem;">Suggested Multi-Drop Run: 5 Morning Chai & Breakfast Orders</h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Cluster Radius: &lt; 1.2 km • Prep Time Compatibility: 100% • 1 Rider replaces 5 separate dispatches.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="split-batch-btn" class="btn btn-secondary btn-sm">✂️ Split Batch</button>
+              <button id="dispatch-batch-btn" class="btn btn-primary btn-sm">🚀 Confirm & Dispatch Batch</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+          <!-- 2/3 Width Map Display -->
+          <div style="grid-column: span 2;">
+            <div class="map-container" id="planner-map" style="height: 600px;">
+              <!-- Telemetry HUD -->
+              <div class="map-telemetry-panel">
+                <div style="font-weight: 700; color: var(--primary-gold); font-size: 0.85rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.35rem;">
+                  ROUTE OPTIMIZATION METRICS
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Total Delivery Stops:</span>
+                  <span class="map-telemetry-value" id="metric-stops-count">5 Stops</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Total Road Distance:</span>
+                  <span class="map-telemetry-value text-gradient-gold" id="metric-total-dist">2.8 km</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Est. Completion Time:</span>
+                  <span class="map-telemetry-value" id="metric-est-time">19 mins</span>
+                </div>
+                <div class="map-telemetry-row">
+                  <span class="map-telemetry-label">Single-Rider Savings:</span>
+                  <span class="map-telemetry-value" style="color: var(--accent-emerald);">₹180 / 4.2 km saved</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1/3 Width Stop Sequence & Rider Assignment Column -->
+          <div>
+            <!-- Rider Selection Box -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <h4 style="margin-bottom: 0.75rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+                Assign Delivery Partner
+              </h4>
+              <div class="form-group" style="margin-bottom: 0.5rem;">
+                <select id="rider-select" class="form-control">
+                  <!-- Dynamically populated riders -->
+                </select>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: 600;" id="rider-status-label">
+                ✓ Online & Ready for Pickup (50m from stall)
+              </div>
+            </div>
+
+            <!-- Ordered Stop Sequence List -->
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+                  Optimized Stop Sequence (2-opt TSP)
+                </h4>
+                <span class="badge badge-gold" id="badge-total-items">7 Items</span>
+              </div>
+
+              <!-- Pickup Node -->
+              <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.08); border-radius: var(--radius-md); border: 1px solid rgba(245, 158, 11, 0.25); margin-bottom: 0.75rem;">
+                <span style="font-size: 1.25rem;">🏪</span>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; font-size: 0.85rem;">Pickup: Sharmaji Chai Stall</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">80 Feet Rd, Koramangala</div>
+                </div>
+                <span class="badge badge-gold">START</span>
+              </div>
+
+              <!-- Customer Drops List -->
+              <div id="stops-container" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 380px; overflow-y: auto;">
+                <!-- Dynamically populated stops -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { store } from '/src/services/store.js';
+    import { batchingEngine } from '/src/services/batchingEngine.js';
+    import { createTearouteMap, fitCoordinates } from '/src/maps/map.js';
+    import { markersFactory } from '/src/maps/markers.js';
+    import { routingService } from '/src/maps/routing.js';
+    import { notifications } from '/src/services/notificationService.js';
+    import { securityGuard } from '/src/firebase/security.js';
+
+    securityGuard.requireAuth(['shopkeeper', 'admin']);
+    renderDashboardSidebar('shopkeeper', 'route-planner');
+
+    let currentBatch = null;
+    let map = null;
+    let markersList = [];
+
+    // Initialize Map
+    map = createTearouteMap('planner-map', {
+      center: [77.6255, 12.9348],
+      zoom: 14.5,
+      pitch: 45
+    });
+
+    // Populate Available Delivery Partners
+    const riders = store.getRiders();
+    const riderSelect = document.getElementById('rider-select');
+    riderSelect.innerHTML = riders.map(r => `
+      <option value="${r.id}">${r.name} (${r.vehicleType} • ★${r.rating})</option>
+    `).join('');
+
+    async function loadSuggestedBatch() {
+      // Clear previous markers
+      markersList.forEach(m => m.remove());
+      markersList = [];
+
+      const batches = await batchingEngine.generateSuggestedBatches('biz_sharma_chai');
+      if (batches.length === 0) {
+        document.getElementById('stops-container').innerHTML = `
+          <div style="text-align: center; padding: 2rem 0; color: var(--text-muted);">
+            No unassigned ready orders for batching.
+          </div>
+        `;
+        return;
+      }
+
+      currentBatch = batches[0];
+
+      // Update metrics HUD
+      document.getElementById('metric-stops-count').innerText = `${currentBatch.stops.length} Stops`;
+      document.getElementById('metric-total-dist').innerText = `${currentBatch.totalDistanceKm} km`;
+      document.getElementById('metric-est-time').innerText = `${currentBatch.estDurationMins} mins`;
+
+      // 1. Add Pickup Marker
+      const pickupM = markersFactory.createStoreMarker(currentBatch.pickupCoordinates, currentBatch.businessName).addTo(map);
+      markersList.push(pickupM);
+
+      // 2. Add Stop Markers
+      currentBatch.stops.forEach((s) => {
+        const m = markersFactory.createCustomerMarker(s.coordinates, s.customerName, s.stopNumber).addTo(map);
+        markersList.push(m);
+      });
+
+      // 3. Render Road Polyline from OSRM
+      if (currentBatch.routeGeometry) {
+        routingService.renderRouteOnMap(map, currentBatch.routeGeometry);
+      }
+
+      // Fit map viewport
+      const allCoords = [currentBatch.pickupCoordinates, ...currentBatch.stops.map(s => s.coordinates)];
+      fitCoordinates(map, allCoords);
+
+      // Render Stops in Sidebar List
+      const container = document.getElementById('stops-container');
+      container.innerHTML = currentBatch.stops.map(s => {
+        const order = store.getOrderById(s.orderId);
+        const itemNames = order ? order.items.map(i => `${i.name} (x${i.quantity})`).join(', ') : 'Chai & Snacks';
+
+        return `
+          <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div class="marker-stop-number" style="position: static; flex-shrink: 0;">${s.stopNumber}</div>
+            <div style="flex: 1; overflow: hidden;">
+              <div style="font-weight: 700; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${s.customerName}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${itemNames}
+              </div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">${s.address}</div>
+            </div>
+            <button class="btn btn-secondary btn-sm remove-stop-btn" data-id="${s.orderId}" title="Remove order from batch" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+              ✕
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // Add remove stop listeners
+      document.querySelectorAll('.remove-stop-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const remId = btn.getAttribute('data-id');
+          currentBatch.stops = currentBatch.stops.filter(s => s.orderId !== remId);
+          notifications.showToast(`Removed order #${remId} from current batch.`, 'info');
+          // Re-sequence remaining stops
+          loadSuggestedBatch();
+        });
+      });
+    }
+
+    map.on('load', () => {
+      loadSuggestedBatch();
+    });
+
+    // Recalculate
+    document.getElementById('recalculate-btn').addEventListener('click', () => {
+      notifications.showToast('Recalculating 2-opt TSP road sequence...', 'info');
+      loadSuggestedBatch();
+    });
+
+    // Dispatch Batch
+    document.getElementById('dispatch-batch-btn').addEventListener('click', () => {
+      if (!currentBatch || currentBatch.stops.length === 0) {
+        alert('No stops selected in batch.');
+        return;
+      }
+
+      const chosenRiderId = riderSelect.value;
+      const dispatched = batchingEngine.confirmBatchDispatch(currentBatch, chosenRiderId);
+
+      notifications.showToast(
+        `Batch ${dispatched.id} assigned to ${dispatched.assignedRiderName}! All 5 orders dispatched.`,
+        'success',
+        'Batch Dispatched'
+      );
+
+      setTimeout(() => {
+        window.location.href = '/shopkeeper/delivery-batches.html';
+      }, 800);
+    });
+
+    // Split batch
+    document.getElementById('split-batch-btn').addEventListener('click', () => {
+      if (!currentBatch || currentBatch.stops.length <= 2) {
+        alert('Batch has too few orders to split.');
+        return;
+      }
+      notifications.showToast('Batch split into 2 smaller clusters (3 stops + 2 stops).', 'info');
+      currentBatch.stops = currentBatch.stops.slice(0, 3);
+      loadSuggestedBatch();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Suite — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/maps.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Central Administration Command</h1>
+        </div>
+        <div class="topbar-right">
+          <span class="badge badge-emerald">SYSTEM ONLINE</span>
+          <a href="/admin/businesses.html" class="btn btn-secondary btn-sm">Pending KYC (2)</a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Platform KPI Metrics -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Platform Gross GMV</span>
+            <div class="stat-value text-gradient-gold">₹24,85,600</div>
+            <div class="stat-trend positive"><span>↑ 34% this month</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Registered Customers</span>
+            <div class="stat-value">12,480</div>
+            <div class="stat-trend positive"><span>↑ 410 new today</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Onboarded Stalls & Hotels</span>
+            <div class="stat-value">342</div>
+            <div class="stat-trend positive"><span>2 pending review</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Active Fleet Riders</span>
+            <div class="stat-value text-gradient-emerald">88</div>
+            <div class="stat-trend positive"><span>Avg drop: 16.4 mins</span></div>
+          </div>
+        </div>
+
+        <!-- Fleet Telemetry Map Overview -->
+        <div class="card" style="margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3>Live City Fleet Operations Map (MapLibre GL)</h3>
+            <span class="badge badge-gold">Bengaluru South Corridor</span>
+          </div>
+          <div class="map-container" id="admin-fleet-map" style="height: 480px;"></div>
+        </div>
+
+        <!-- System Activity Ledger -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3>Recent System Audit Events</h3>
+            <a href="/admin/analytics.html" class="btn btn-secondary btn-sm">Download Logs →</a>
+          </div>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action / Event</th>
+                  <th>Actor Role</th>
+                  <th>Resource ID</th>
+                  <th>Security Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color: var(--text-muted);">Just now</td>
+                  <td>Smart Batch #BATCH-7001 dispatched (5 orders grouped)</td>
+                  <td><span class="badge badge-gold">Shopkeeper</span></td>
+                  <td>biz_sharma_chai</td>
+                  <td><span class="badge badge-emerald">AUTHORIZED</span></td>
+                </tr>
+                <tr>
+                  <td style="color: var(--text-muted);">3 mins ago</td>
+                  <td>1-KM Geodesic Proximity threshold crossed</td>
+                  <td><span class="badge badge-orange">Delivery</span></td>
+                  <td>ORD-7001</td>
+                  <td><span class="badge badge-emerald">TRIGGERED</span></td>
+                </tr>
+                <tr>
+                  <td style="color: var(--text-muted);">12 mins ago</td>
+                  <td>New Vendor Registration: Chai Junction Indiranagar</td>
+                  <td><span class="badge badge-blue">Merchant</span></td>
+                  <td>biz_chai_junction</td>
+                  <td><span class="badge badge-gold">PENDING APPROVAL</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { createTearouteMap } from '/src/maps/map.js';
+    import { markersFactory } from '/src/maps/markers.js';
+    import { store } from '/src/services/store.js';
+    import { securityGuard } from '/src/firebase/security.js';
+
+    securityGuard.requireAuth(['admin']);
+    renderDashboardSidebar('admin', 'dashboard');
+
+    const map = createTearouteMap('admin-fleet-map', {
+      center: [77.6255, 12.9348],
+      zoom: 14,
+      pitch: 45
+    });
+
+    map.on('load', () => {
+      // Add Businesses
+      store.getBusinesses().forEach(b => {
+        markersFactory.createStoreMarker(b.coordinates, b.name).addTo(map);
+      });
+
+      // Add Active Riders
+      store.getRiders().forEach(r => {
+        markersFactory.createScooterMarker(r.currentCoordinates, 60).addTo(map);
+      });
+    });
+  </script>
+</body>
+</html>

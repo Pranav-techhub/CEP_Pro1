@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Earnings & Payouts — TeaRoute</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="dashboard-sidebar"></aside>
+
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Rider Earnings Ledger</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="payout-btn" class="btn btn-emerald btn-sm">⚡ Instant Bank Payout</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Available Balance</span>
+            <div class="stat-value text-gradient-gold">₹3,450.00</div>
+            <div class="stat-trend positive"><span>Ready for immediate UPI transfer</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">This Week's Total</span>
+            <div class="stat-value">₹11,820</div>
+            <div class="stat-trend positive"><span>↑ ₹1,200 vs last week</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Multi-Order Batch Bonuses</span>
+            <div class="stat-value text-gradient-emerald">₹1,940</div>
+            <div class="stat-trend positive"><span>+15% efficiency incentive</span></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Customer Tips</span>
+            <div class="stat-value">₹860</div>
+            <div class="stat-trend"><span>100% passed to rider</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom: 1.25rem;">Recent Completed Trips</h3>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Trip Ref</th>
+                  <th>Completed Time</th>
+                  <th>Vendor / Pickup</th>
+                  <th>Stops Completed</th>
+                  <th>Distance</th>
+                  <th>Base Pay</th>
+                  <th>Batch Bonus</th>
+                  <th>Total Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>#TRIP-9842</strong></td>
+                  <td>10:45 AM</td>
+                  <td>Sharmaji Chai & Nashta</td>
+                  <td>5 Drops</td>
+                  <td>2.8 km</td>
+                  <td>₹150</td>
+                  <td><span class="badge badge-emerald">+₹70</span></td>
+                  <td><strong>₹220</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>#TRIP-9839</strong></td>
+                  <td>09:15 AM</td>
+                  <td>The Royal Darbar</td>
+                  <td>2 Drops</td>
+                  <td>3.4 km</td>
+                  <td>₹90</td>
+                  <td><span class="badge badge-emerald">+₹30</span></td>
+                  <td><strong>₹120</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>#TRIP-9831</strong></td>
+                  <td>Yesterday</td>
+                  <td>Artisan Bakery & Cafe</td>
+                  <td>3 Drops</td>
+                  <td>2.1 km</td>
+                  <td>₹110</td>
+                  <td><span class="badge badge-emerald">+₹45</span></td>
+                  <td><strong>₹155</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { renderDashboardSidebar } from '/src/components/sidebar.js';
+    import { notifications } from '/src/services/notificationService.js';
+
+    renderDashboardSidebar('delivery', 'earnings');
+
+    document.getElementById('payout-btn').addEventListener('click', () => {
+      notifications.showToast('Instant UPI payout request of ₹3,450.00 initiated to your linked bank account.', 'success', 'Payout Dispatched');
+    });
+  </script>
+</body>
+</html>
